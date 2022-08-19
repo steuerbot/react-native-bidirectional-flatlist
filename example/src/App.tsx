@@ -1,17 +1,8 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
+import type { FC } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
-import {
-  Button,
-  ScrollView as ScrollViewRN,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { ScrollView as ScrollViewChanged } from 'react-native-bidirectional-flatlist';
-
-const USE_NEW = true;
-
-const ScrollView = USE_NEW ? ScrollViewChanged : ScrollViewRN;
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView } from 'react-native-bidirectional-flatlist';
 
 interface MessageType {
   id: string;
@@ -21,10 +12,10 @@ interface MessageType {
 
 let counter = 1;
 const getIdNumber = () => counter++;
+let block = 1;
+const getBlockNumber = () => block++;
 
-const HEIGHT = 150;
-
-const generateData = (howMany: number = 20): MessageType[] => {
+const generateData = (howMany = 20): MessageType[] => {
   const colors = [
     'red',
     'green',
@@ -35,12 +26,13 @@ const generateData = (howMany: number = 20): MessageType[] => {
     'magenta',
     'cyan',
   ];
+  const color = colors[getBlockNumber() % colors.length] as string;
   return Array.from(new Array(howMany)).map(() => {
-    const count = getIdNumber();
+    const id = getIdNumber();
     return {
-      id: count.toString(),
-      color: colors[count % colors.length] as string,
-      height: HEIGHT,
+      id: id.toString(),
+      color,
+      height: Math.floor(50 + Math.random() * 100),
     };
   });
 };
@@ -50,48 +42,96 @@ const Message: FC<MessageType> = ({ id, color, height }) => (
     style={{
       height,
       width: '100%',
+      padding: 8,
       paddingHorizontal: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: color,
     }}
   >
-    <Text>{id}</Text>
+    <View
+      style={{
+        backgroundColor: color,
+        paddingHorizontal: 8,
+        height: height - 8,
+      }}
+    >
+      <Text style={{ fontSize: 32, color: 'white' }}>{id}</Text>
+    </View>
   </View>
 );
 
 export default function App() {
-  const [data, setData] = useState(() => generateData());
+  const [data, setData] = useState<MessageType[]>([]);
+  const [type] = useState<'flatlist' | 'scrollview'>('flatlist');
 
-  const ref = useRef<ScrollViewRN>();
-  const ran = useRef<boolean>();
+  const ref = useRef<typeof FlatList>(null);
+
+  const renderItem = useCallback(({item}) => {
+    return <Message key={item.id} {...item} />
+  }, [])
+
+  const keyExtractor = useCallback((item) => item.id, []);
 
   const prepend = useCallback(() => {
-    const howMany = 1;
+    const newData = generateData();
     ref.current?.shift({
       offset: 0,
-      height: 150,
+      height: newData.reduce((p, c) => p + c.height, 0),
     });
-    setData((x) => [...generateData(howMany), ...x]);
+    setData((x) => [...newData, ...x]);
   }, []);
 
-  useEffect(() => {
-    if (ran.current) {
-      return;
+  const append = useCallback(() => {
+    const newData = generateData();
+    ref.current?.shift({
+      offset: data.reduce((p, c) => p + c.height, 0),
+      height: newData.reduce((p, c) => p + c.height, 0),
+    });
+    setData((x) => [...x, ...newData]);
+  }, [data]);
+
+  const reset = useCallback(() => {
+    setData([]);
+  }, []);
+
+  const getItemLayout = useCallback((data, index) => {
+    return {
+      index,
+      length: data[index].height,
+      offset: data.slice(0, index).reduce((p: number,c: MessageType) => p+c.height, 0),
     }
-    ran.current = true;
-    console.log(ref.current);
   }, []);
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.list} ref={ref}>
-        {data.map((d) => (
-          <Message key={d.id} {...d} />
-        ))}
-      </ScrollView>
-      <View style={{ position: 'absolute', bottom: 100 }}>
+      {type === 'scrollview' && <ScrollView style={styles.list} ref={ref as any}>
+        {data.map((d) => renderItem({item: d}))}
+      </ScrollView>}
+      {type === 'flatlist' && <FlatList data={data} renderItem={renderItem} keyExtractor={keyExtractor} getItemLayout={getItemLayout} ref={ref as any} />}
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}
+      >
         <Button title="Prepend" onPress={prepend} />
+        <Button title="Append" onPress={append} />
+        <Button title="Reset" onPress={reset} />
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          right: 0,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          backgroundColor: 'red',
+          padding: 8,
+        }}
+      >
+        <Text style={{ fontWeight: '900', color: 'white', fontSize: 16 }}>
+          {data.length} / {type}
+        </Text>
       </View>
     </View>
   );
@@ -100,8 +140,10 @@ export default function App() {
 const styles = StyleSheet.create({
   list: {
     flex: 1,
+    backgroundColor: '#f0f0f0',
   },
   container: {
     flex: 1,
+    backgroundColor: '#f0f0f0',
   },
 });

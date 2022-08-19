@@ -1,22 +1,22 @@
-import React from 'react';
-import {
-  PixelRatio,
-  Platform,
-  ScrollView as ScrollViewRN,
-  StyleSheet,
-  View,
-} from 'react-native';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
+import React, { Component, forwardRef } from 'react';
+import { PixelRatio, Platform, ScrollView as ScrollViewRN, ScrollViewProps, StyleSheet, View } from 'react-native';
 import { BidirectionalFlatlist } from './BidirectionalFlatlist';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-const ScrollViewRNRaw = ScrollViewRN.render().type; // hack to get inner type of ScrollView
+const ScrollViewRNRaw: Component<ScrollViewProps> = ScrollViewRN.render().type; // hack to get inner type of ScrollView
 
-export class ScrollView extends ScrollViewRNRaw {
-  constructor(props) {
+export type ShiftFunction = ({ offset, height }: { offset: number; height: number }) => void;
+
+export class ScrollViewComponent extends ScrollViewRNRaw {
+  constructor(props: ScrollViewProps) {
     super(props);
   }
 
-  shift({ offset, height }: { offset: number; height: number }) {
+  shift: ShiftFunction = ({ offset, height }: { offset: number; height: number }) => {
     this._scrollViewRef.setNativeProps({
       shiftOffset: PixelRatio.getPixelSizeForLayoutSize(offset),
       shiftHeight: PixelRatio.getPixelSizeForLayoutSize(height),
@@ -49,7 +49,7 @@ export class ScrollView extends ScrollViewRNRaw {
           };
 
     const { stickyHeaderIndices } = this.props;
-    let children = this.props.children;
+    const children = this.props.children;
 
     const hasStickyHeaders =
       Array.isArray(stickyHeaderIndices) && stickyHeaderIndices.length > 0;
@@ -155,13 +155,10 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     overflow: 'scroll',
   },
-  baseHorizontal: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexDirection: 'row',
-    overflow: 'scroll',
-  },
-  contentContainerHorizontal: {
-    flexDirection: 'row',
-  },
+});
+
+export type ScrollViewType = typeof ScrollViewRN & {shift: (options: {offset: number; height: number}) => void};
+
+export const ScrollView: ScrollViewType = forwardRef<ScrollViewType, ScrollViewProps>((props, ref) => {
+  return <ScrollViewComponent {...props} ref={ref} />
 });
