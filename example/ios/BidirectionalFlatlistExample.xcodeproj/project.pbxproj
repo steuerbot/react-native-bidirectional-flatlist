@@ -295,7 +295,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.reactnativebidirectionalflatlist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.reactnativebidirectionalflatlist;
 				PRODUCT_NAME = BidirectionalFlatlistExample;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -320,7 +320,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.reactnativebidirectionalflatlist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.reactnativebidirectionalflatlist;
 				PRODUCT_NAME = BidirectionalFlatlistExample;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
