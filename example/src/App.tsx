@@ -1,8 +1,8 @@
 import type { FC } from 'react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import { Button, StyleSheet, Text, View } from 'react-native';
-import { FlatList, ScrollView } from 'react-native-bidirectional-flatlist';
+import { Button, Text, View } from 'react-native';
+import BidirectionalFlatList from 'react-native-bidirectional-flatlist';
 
 interface MessageType {
   id: string;
@@ -15,7 +15,7 @@ const getIdNumber = () => counter++;
 let block = 1;
 const getBlockNumber = () => block++;
 
-const generateData = (howMany = 20): MessageType[] => {
+const generateData = (howMany = 20, height: number | undefined = undefined): MessageType[] => {
   const colors = [
     'red',
     'green',
@@ -32,37 +32,44 @@ const generateData = (howMany = 20): MessageType[] => {
     return {
       id: id.toString(),
       color,
-      height: Math.floor(50 + Math.random() * 100),
+      height: height ?? Math.floor(50 + Math.random() * 100),
     };
   });
 };
 
-const Message: FC<MessageType> = ({ id, color, height }) => (
-  <View
-    style={{
-      height,
-      width: '100%',
-      padding: 8,
-      paddingHorizontal: 16,
-    }}
-  >
+const Message: FC<MessageType> = ({ id, color, height }) => {
+  if(!height) {
+    return null;
+  }
+  return (
     <View
       style={{
-        backgroundColor: color,
-        paddingHorizontal: 8,
-        height: height - 8,
+        height,
+        width: '100%',
+        padding: 8,
+        paddingHorizontal: 16,
+        overflow: 'hidden',
       }}
     >
-      <Text style={{ fontSize: 32, color: 'white' }}>{id}</Text>
+      <View
+        style={{
+          backgroundColor: color,
+          paddingHorizontal: 8,
+          height: height - 8,
+        }}
+      >
+        <Text style={{ fontSize: 32, color: 'white' }}>{id}</Text>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export default function App() {
+  const [puffer] = useState(() => generateData(20, 0));
   const [data, setData] = useState<MessageType[]>([]);
   const [type] = useState<'flatlist' | 'scrollview'>('flatlist');
 
-  const ref = useRef<typeof FlatList>(null);
+  const ref = useRef<typeof BidirectionalFlatList>(null);
 
   const renderItem = useCallback(({item}) => {
     return <Message key={item.id} {...item} />
@@ -70,18 +77,18 @@ export default function App() {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  const prepend = useCallback(() => {
-    const newData = generateData();
-    ref.current?.shift({
+  const prepend = useCallback(async () => {
+    const newData = generateData(20);
+    ref.current?.shift?.({
       offset: 0,
       height: newData.reduce((p, c) => p + c.height, 0),
     });
     setData((x) => [...newData, ...x]);
   }, []);
 
-  const append = useCallback(() => {
+  const append = useCallback(async () => {
     const newData = generateData();
-    ref.current?.shift({
+    ref.current?.shift?.({
       offset: data.reduce((p, c) => p + c.height, 0),
       height: newData.reduce((p, c) => p + c.height, 0),
     });
@@ -92,20 +99,19 @@ export default function App() {
     setData([]);
   }, []);
 
-  const getItemLayout = useCallback((data, index) => {
-    return {
-      index,
-      length: data[index].height,
-      offset: data.slice(0, index).reduce((p: number,c: MessageType) => p+c.height, 0),
-    }
-  }, []);
+  const finalData = useMemo(() => [...data, ...puffer], [data]);
 
   return (
     <View style={{ flex: 1 }}>
-      {type === 'scrollview' && <ScrollView style={styles.list} ref={ref as any}>
-        {data.map((d) => renderItem({item: d}))}
-      </ScrollView>}
-      {type === 'flatlist' && <FlatList data={data} renderItem={renderItem} keyExtractor={keyExtractor} getItemLayout={getItemLayout} ref={ref as any} />}
+      {!!data.length && <BidirectionalFlatList
+        windowSize={21}
+        maxToRenderPerBatch={20}
+        initialNumToRender={20}
+        data={finalData}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        ref={ref as any}
+      />}
       <View
         style={{
           position: 'absolute',
@@ -136,14 +142,3 @@ export default function App() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  list: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-});

@@ -9,8 +9,6 @@ import { BidirectionalFlatlist } from './BidirectionalFlatlist';
 // @ts-ignore
 const ScrollViewRNRaw: Component<ScrollViewProps> = ScrollViewRN.render().type; // hack to get inner type of ScrollView
 
-export type ShiftFunction = ({ offset, height }: { offset: number; height: number }) => void;
-
 export class ScrollViewComponent extends ScrollViewRNRaw {
   constructor(props: ScrollViewProps) {
     super(props);

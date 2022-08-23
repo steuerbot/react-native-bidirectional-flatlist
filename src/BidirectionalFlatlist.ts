@@ -1,10 +1,5 @@
 import type { ReactNode } from 'react';
-import {
-  Platform,
-  requireNativeComponent,
-  UIManager,
-  ViewStyle,
-} from 'react-native';
+import { Platform, requireNativeComponent, UIManager, ViewStyle } from 'react-native';
 
 const LINKING_ERROR =
   `The package 'react-native-bidirectional-flatlist' doesn't seem to be linked. Make sure: \n\n` +
@@ -19,9 +14,10 @@ type BidirectionalFlatlistProps = {
 
 const ComponentName = 'BidirectionalFlatlist';
 
-export const BidirectionalFlatlist =
+export const BidirectionalFlatlist = Platform.OS === 'android' ?
   UIManager.getViewManagerConfig(ComponentName) != null
     ? requireNativeComponent<BidirectionalFlatlistProps>(ComponentName)
     : () => {
         throw new Error(LINKING_ERROR);
-      };
+      }
+: null;

@@ -1,2 +1,3 @@
-export * from './ScrollView';
-export * from './FlatList';
+import { FlatList } from './FlatList';
+
+export default FlatList;
