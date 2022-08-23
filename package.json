@@ -35,13 +35,13 @@
     "ios",
     "android"
   ],
-  "repository": "https://www.steuerbot.com",
-  "author": "friedolin <friedolin@steuerbot.com> (https://www.friedolinfoerder.de)",
+  "repository": "https://github.com/steuerbot/react-native-bidirectional-flatlist",
+  "author": "Friedolin Förder <friedolin@steuerbot.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://www.steuerbot.com/issues"
+    "url": "https://github.com/steuerbot/react-native-bidirectional-flatlist/issues"
   },
-  "homepage": "https://www.steuerbot.com#readme",
+  "homepage": "https://github.com/steuerbot/react-native-bidirectional-flatlist#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

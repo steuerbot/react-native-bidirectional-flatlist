@@ -6,14 +6,20 @@ FlatList supports bidirectional additions
 npm install react-native-bidirectional-flatlist
 ```
 
+or
+
+```sh
+yarn add react-native-bidirectional-flatlist
+```
+
 ## Usage
 
 ```js
-import { BidirectionalFlatlistView } from "react-native-bidirectional-flatlist";
+import BidirectionalFlatlist from "react-native-bidirectional-flatlist";
 
 // ...
 
-<BidirectionalFlatlistView color="tomato" />
+<BidirectionalFlatlist renderItem={renderItem} data={data} keyExtractor={keyExtractor} />
 ```
 
 ## Contributing

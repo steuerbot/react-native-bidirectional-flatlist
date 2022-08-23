@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "10.0" }
-  s.source       = { :git => "https://www.steuerbot.com.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/steuerbot/react-native-bidirectional-flatlist.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm}"
 
