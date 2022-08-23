@@ -20,6 +20,9 @@ const capture = (r: any, ref: MutableRefObject<FlatListType>) => {
   }
   ref.current = r ? Object.assign(r, {
     shift: (options: {height: number; offset: number}) => {
+      if(Platform.OS !== 'android') {
+        return;
+      }
       r.getNativeScrollRef().shift(options);
     },
   }) : r;
