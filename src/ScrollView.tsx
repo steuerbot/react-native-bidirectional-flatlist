@@ -4,6 +4,7 @@
 import React, { Component, forwardRef } from 'react';
 import { PixelRatio, Platform, ScrollView as ScrollViewRN, ScrollViewProps, StyleSheet, View } from 'react-native';
 import { BidirectionalFlatlist } from './BidirectionalFlatlist';
+import type { ShiftFunction } from './types';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

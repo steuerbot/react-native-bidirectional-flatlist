@@ -1,7 +1,7 @@
 {
   "name": "react-native-bidirectional-flatlist",
   "version": "0.1.0",
-  "description": "test",
+  "description": "A FlatList which can handle prepending and appending and still holding the current position",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
