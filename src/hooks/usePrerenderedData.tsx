@@ -31,11 +31,26 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
   const heightsRef = useRef<Record<string, any>>({});
 
   useEffect(() => {
-    if(getItemLayout || data === finalData) {
+    if(getItemLayout) {
+      const newD = data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]);
+      heightsRef.current = data.reduce((p,c,i) => {
+        p[keyExtractor(c, i)] = getItemLayout(data as any[], i).length;
+        return p;
+      }, {});
+      const index = data.findIndex((d) => d === newD[0]);
+      const shift = {
+        height: newD.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+        offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+      };
+      scrollRef.current?.shift(shift);
+      onUpdateData?.({heights: heightsRef.current, ...shift});
+      return;
+    }
+    if(data === finalData) {
       return;
     }
     setNewData(data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]));
-  }, [data, finalData, getItemLayout, keyExtractor]);
+  }, [data, finalData, getItemLayout, keyExtractor, onUpdateData, scrollRef]);
 
   useEffect(() => {
     if(getItemLayout || !newData.length) {
@@ -62,7 +77,7 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
   }, [data, keyExtractor, newData, onUpdateData, scrollRef]);
 
   return {
-    finalData: getItemLayout ? data : finalData,
+    finalData,
     prerender: newData.length ? <View>
       {newData.map((d, i) => <Prerender key={keyExtractor(d, i)} id={keyExtractor(d, i)} onLayout={onLayout}>{renderItem({item: d, prerendering: true})}</Prerender>)}
     </View> : undefined,
