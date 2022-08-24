@@ -1,6 +1,7 @@
 import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { FlatListProps, LayoutChangeEvent, View } from 'react-native';
 import type { FlatListType, OnUpdateData, RenderItem } from '../types';
+import { MIN_INDEX } from '../config';
 
 type OnLayout = (options: {id: string; height: number}) => void;
 
@@ -41,13 +42,15 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
         return p;
       }, {});
       const index = data.findIndex((d) => d === newD[0]);
-      const shift = {
-        height: newD.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
-        offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
-      };
-      scrollRef.current?.shift(shift);
+      if(index > 0 && index <= MIN_INDEX) {
+        const shift = {
+          height: newD.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+          offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+        };
+        scrollRef.current?.shift(shift);
+        onUpdateData?.({heights: heightsRef.current, ...shift});
+      }
       setFinalData(data);
-      onUpdateData?.({heights: heightsRef.current, ...shift});
       return;
     }
     setNewData(data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]));
@@ -67,14 +70,16 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
       return;
     }
     const index = data.findIndex((d) => d === newData[0]);
-    const shift = {
-      height: newData.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
-      offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
-    };
-    scrollRef.current?.shift(shift);
+    if(index > 0 && index <= MIN_INDEX) {
+      const shift = {
+        height: newData.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+        offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
+      };
+      scrollRef.current?.shift(shift);
+      onUpdateData?.({heights: heightsRef.current, ...shift});
+    }
     setNewData([]);
     setFinalData(data);
-    onUpdateData?.({heights: heightsRef.current, ...shift});
   }, [data, keyExtractor, newData, onUpdateData, scrollRef]);
 
   return {

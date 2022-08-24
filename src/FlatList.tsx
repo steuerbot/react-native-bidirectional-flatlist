@@ -3,8 +3,9 @@ import { FlatList as FlatListRN, LayoutChangeEvent, Platform, ScrollViewProps, S
 import { ScrollView } from './ScrollView';
 import { usePrerenderedData } from './hooks/usePrerenderedData';
 import type { BidirectionalFlatListProps, FlatListType } from './types';
+import { MIN_INDEX } from './config';
 
-const maintainVisibleContentPosition = { minIndexForVisible: 1 };
+const maintainVisibleContentPosition = { minIndexForVisible: MIN_INDEX };
 
 const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props, ref) => {
   const renderScrollComponent = useCallback((props: ScrollViewProps) => {
