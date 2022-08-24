@@ -31,6 +31,9 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
   const heightsRef = useRef<Record<string, any>>({});
 
   useEffect(() => {
+    if(data === finalData) {
+      return;
+    }
     if(getItemLayout) {
       const newD = data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]);
       heightsRef.current = data.reduce((p,c,i) => {
@@ -43,10 +46,8 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
         offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
       };
       scrollRef.current?.shift(shift);
+      setFinalData(data);
       onUpdateData?.({heights: heightsRef.current, ...shift});
-      return;
-    }
-    if(data === finalData) {
       return;
     }
     setNewData(data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]));
