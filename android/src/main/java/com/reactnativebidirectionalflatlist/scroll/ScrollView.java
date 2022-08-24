@@ -41,8 +41,6 @@ public class ScrollView extends ReactScrollView {
     if(mShiftHeight != 0 && mShiftOffset <= getScrollY()) {
       // correct
       scrollTo(0, getScrollY() + (int)mShiftHeight);
-      mShiftHeight = 0;
-      mShiftOffset = 0;
       if(getOverScrollerFromParent() != null && !getOverScrollerFromParent().isFinished()) {
         // get current directed velocity from scroller
         int direction = getOverScrollerFromParent().getFinalY() - getOverScrollerFromParent().getStartY() > 0 ? 1 : -1;
@@ -65,6 +63,8 @@ public class ScrollView extends ReactScrollView {
         ViewCompat.postInvalidateOnAnimation(this);
       }
     }
+    mShiftHeight = 0;
+    mShiftOffset = 0;
   }
 
   @Nullable
