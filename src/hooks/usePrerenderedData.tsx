@@ -17,12 +17,13 @@ const Prerender = ({id, onLayout, children}: {id: string; onLayout: OnLayout; ch
   </View>
 }
 
-export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, onUpdateData}: {
+export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, onUpdateData, getItemLayout}: {
   data: readonly any[];
   keyExtractor: Required<FlatListProps<any>>['keyExtractor'];
   renderItem: RenderItem
   scrollRef: MutableRefObject<FlatListType>;
-  onUpdateData?: OnUpdateData
+  onUpdateData?: OnUpdateData;
+  getItemLayout?: FlatListProps<any>['getItemLayout'];
 }) => {
   const [finalData, setFinalData] = useState<readonly any[]>([]);
   const [newData, setNewData] = useState<any[]>([]);
@@ -30,17 +31,17 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
   const heightsRef = useRef<Record<string, any>>({});
 
   useEffect(() => {
-    if(data === finalData) {
+    if(getItemLayout || data === finalData) {
       return;
     }
     setNewData(data.filter((d, i) => !heightsRef.current[keyExtractor(d, i)]));
-  }, [data, finalData]);
+  }, [data, finalData, getItemLayout, keyExtractor]);
 
   useEffect(() => {
-    if(!newData.length) {
+    if(getItemLayout || !newData.length) {
       return;
     }
-  }, [newData]);
+  }, [newData, getItemLayout]);
 
   const onLayout = useCallback<OnLayout>(({id, height}) => {
     heightsRef.current[id] = height;
@@ -58,14 +59,14 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
     setNewData([]);
     setFinalData(data);
     onUpdateData?.({heights: heightsRef.current, ...shift});
-  }, [data, keyExtractor, newData, onUpdateData]);
+  }, [data, keyExtractor, newData, onUpdateData, scrollRef]);
 
   return {
-    finalData,
+    finalData: getItemLayout ? data : finalData,
     prerender: newData.length ? <View>
       {newData.map((d, i) => <Prerender key={keyExtractor(d, i)} id={keyExtractor(d, i)} onLayout={onLayout}>{renderItem({item: d, prerendering: true})}</Prerender>)}
     </View> : undefined,
-    getItemLayout: useCallback((data, index) => {
+    getItemLayoutCustom: useCallback((data, index) => {
       const d = data[index];
       const id = keyExtractor(d, index);
       return {
@@ -75,6 +76,6 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
           return p + heightsRef.current[keyExtractor(c, i)];
         }, 0),
       }
-    }, []),
+    }, [keyExtractor]),
   };
 };

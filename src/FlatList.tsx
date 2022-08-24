@@ -38,13 +38,15 @@ const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props
     keyExtractor = (item) => item.id,
     renderItem,
     onUpdateData,
+    getItemLayout,
   } = props;
-  const {finalData, prerender, getItemLayout} = usePrerenderedData({
+  const {finalData, prerender, getItemLayoutCustom} = usePrerenderedData({
     data: data ?? [],
     keyExtractor,
     renderItem,
     scrollRef: capturedRef as MutableRefObject<FlatListType>,
-    onUpdateData
+    onUpdateData,
+    getItemLayout,
   });
 
   const [width, setWidth] = useState<number>();
@@ -57,7 +59,7 @@ const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props
     <FlatListRN
       maintainVisibleContentPosition={props.maintainVisibleContentPosition ?? maintainVisibleContentPosition}
       renderScrollComponent={Platform.OS === 'android' ? renderScrollComponent : undefined}
-      getItemLayout={getItemLayout}
+      getItemLayout={getItemLayoutCustom}
       {...props}
       onLayout={onLayout}
       data={finalData}

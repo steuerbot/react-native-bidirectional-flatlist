@@ -1,6 +1,6 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useMemo, useState } from 'react';
 
-import { Button, FlatList, Text, View } from 'react-native';
+import { Button, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import BidirectionalFlatList from 'react-native-bidirectional-flatlist';
 import Reanimated, { useAnimatedRef } from 'react-native-reanimated';
 
@@ -69,13 +69,10 @@ const Message: FC<MessageType> = ({ id, color, height }) => {
 export default function App() {
   const [puffer] = useState(() => generateData(20, 0));
   const [data, setData] = useState<MessageType[]>([]);
-  const [type] = useState<'flatlist' | 'animatedflatlist'>('flatlist');
+  const [type, setType] = useState<'flatlist' | 'animatedflatlist'>('flatlist');
+  const toggleType = useCallback(() => setType(t => t === 'flatlist' ? 'animatedflatlist' : 'flatlist'), []);
 
   const ref = useAnimatedRef<FlatList>();
-
-  useEffect(() => {
-    console.log(ref.current);
-  }, []);
 
   const renderItem = useCallback(({item}) => {
     return <Message key={item.id} {...item} />
@@ -91,7 +88,7 @@ export default function App() {
   const append = useCallback(async () => {
     const newData = generateData();
     setData((x) => [...x, ...newData]);
-  }, [data]);
+  }, []);
 
   const reset = useCallback(() => {
     setData([]);
@@ -125,21 +122,23 @@ export default function App() {
         <Button title="Append" onPress={append} />
         <Button title="Reset" onPress={reset} />
       </View>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 100,
-          right: 0,
-          flexDirection: 'row',
-          justifyContent: 'center',
-          backgroundColor: 'red',
-          padding: 8,
-        }}
-      >
-        <Text style={{ fontWeight: '900', color: 'white', fontSize: 16 }}>
-          {data.length} / {type}
-        </Text>
-      </View>
+      <TouchableOpacity onPress={toggleType}>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 100,
+            right: 0,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            backgroundColor: 'red',
+            padding: 8,
+          }}
+        >
+          <Text style={{ fontWeight: '900', color: 'white', fontSize: 16 }}>
+            {data.length} / {type}
+          </Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
