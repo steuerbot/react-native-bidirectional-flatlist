@@ -42,7 +42,7 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
         return p;
       }, {});
       const index = data.findIndex((d) => d === newD[0]);
-      if(index > 0 && index <= MIN_INDEX) {
+      if(index >= 0 && index <= MIN_INDEX) {
         const shift = {
           height: newD.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
           offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
@@ -70,7 +70,7 @@ export const usePrerenderedData = ({data, keyExtractor, renderItem, scrollRef, o
       return;
     }
     const index = data.findIndex((d) => d === newData[0]);
-    if(index > 0 && index <= MIN_INDEX) {
+    if(index >= 0 && index <= MIN_INDEX) {
       const shift = {
         height: newData.reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
         offset: data.slice(0, index).reduce((p, c, i) => p + heightsRef.current[keyExtractor(c, i)], 0),
