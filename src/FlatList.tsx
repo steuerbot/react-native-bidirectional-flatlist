@@ -1,40 +1,36 @@
-import React, { forwardRef, MutableRefObject, useCallback, useState } from 'react';
-import {
-  FlatList as FlatListRN,
-  FlatListProps,
-  LayoutChangeEvent,
-  Platform,
-  ScrollViewProps,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, { forwardRef, MutableRefObject, useCallback, useRef, useState } from 'react';
+import { FlatList as FlatListRN, LayoutChangeEvent, Platform, ScrollViewProps, StyleSheet, View } from 'react-native';
 import { ScrollView } from './ScrollView';
 import { usePrerenderedData } from './hooks/usePrerenderedData';
-import type { FlatListType, OnUpdateData, RenderItem } from './types';
+import type { BidirectionalFlatListProps, FlatListType } from './types';
 
 const maintainVisibleContentPosition = { minIndexForVisible: 1 };
 
-const capture = (r: any, ref: MutableRefObject<FlatListType>) => {
-  if(!ref) {
-    return;
-  }
-  ref.current = r ? Object.assign(r, {
-    shift: (options: {height: number; offset: number}) => {
-      if(Platform.OS !== 'android') {
-        return;
-      }
-      r.getNativeScrollRef().shift(options);
-    },
-  }) : r;
-}
-
-
-const FlatListImpl = forwardRef<FlatListType, FlatListProps<any> & {renderItem: RenderItem, onUpdateData?: OnUpdateData}>((props, ref) => {
+const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props, ref) => {
   const renderScrollComponent = useCallback((props: ScrollViewProps) => {
     return <ScrollView {...props} />;
   }, []);
 
-  const captureRef = useCallback((r) => capture(r, ref as MutableRefObject<FlatListType>), []);
+  const capturedRef = useRef<FlatListType>();
+  const captureRef = useCallback((r: any) => {
+    const obj = r ? Object.assign(r, {
+      shift: (options: {height: number; offset: number}) => {
+        if(Platform.OS !== 'android') {
+          return;
+        }
+        r.getNativeScrollRef().shift(options);
+      },
+    }) : r;
+    capturedRef.current = obj;
+    if(!ref) {
+      return;
+    }
+    if(typeof ref === 'function') {
+      ref(obj);
+    } else {
+      (ref as MutableRefObject<FlatListType>).current = obj;
+    }
+  }, []);
 
   // todo add hack to prevent flickering
   const {
@@ -47,7 +43,7 @@ const FlatListImpl = forwardRef<FlatListType, FlatListProps<any> & {renderItem: 
     data: data ?? [],
     keyExtractor,
     renderItem,
-    scrollRef: ref as MutableRefObject<FlatListType>,
+    scrollRef: capturedRef as MutableRefObject<FlatListType>,
     onUpdateData
   });
 

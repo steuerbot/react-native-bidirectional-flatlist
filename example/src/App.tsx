@@ -1,8 +1,10 @@
-import type { FC } from 'react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Button, Text, View } from 'react-native';
+import { Button, FlatList, Text, View } from 'react-native';
 import BidirectionalFlatList from 'react-native-bidirectional-flatlist';
+import Reanimated, { useAnimatedRef } from 'react-native-reanimated';
+
+const FlatListReanimated = Reanimated.createAnimatedComponent(BidirectionalFlatList);
 
 interface MessageType {
   id: string;
@@ -67,9 +69,13 @@ const Message: FC<MessageType> = ({ id, color, height }) => {
 export default function App() {
   const [puffer] = useState(() => generateData(20, 0));
   const [data, setData] = useState<MessageType[]>([]);
-  const [type] = useState<'flatlist' | 'scrollview'>('flatlist');
+  const [type] = useState<'flatlist' | 'animatedflatlist'>('flatlist');
 
-  const ref = useRef<typeof BidirectionalFlatList>(null);
+  const ref = useAnimatedRef<FlatList>();
+
+  useEffect(() => {
+    console.log(ref.current);
+  }, []);
 
   const renderItem = useCallback(({item}) => {
     return <Message key={item.id} {...item} />
@@ -79,19 +85,11 @@ export default function App() {
 
   const prepend = useCallback(async () => {
     const newData = generateData(20);
-    ref.current?.shift?.({
-      offset: 0,
-      height: newData.reduce((p, c) => p + c.height, 0),
-    });
     setData((x) => [...newData, ...x]);
   }, []);
 
   const append = useCallback(async () => {
     const newData = generateData();
-    ref.current?.shift?.({
-      offset: data.reduce((p, c) => p + c.height, 0),
-      height: newData.reduce((p, c) => p + c.height, 0),
-    });
     setData((x) => [...x, ...newData]);
   }, [data]);
 
@@ -101,17 +99,20 @@ export default function App() {
 
   const finalData = useMemo(() => [...data, ...puffer], [data]);
 
+  const props = {
+    windowSize: 21,
+    maxToRenderPerBatch: 20,
+    initialNumToRender: 20,
+    data: finalData,
+    renderItem: renderItem,
+    keyExtractor: keyExtractor,
+    ref: ref as any,
+  }
+
   return (
     <View style={{ flex: 1 }}>
-      {!!data.length && <BidirectionalFlatList
-        windowSize={21}
-        maxToRenderPerBatch={20}
-        initialNumToRender={20}
-        data={finalData}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        ref={ref as any}
-      />}
+      {type === 'flatlist' && <BidirectionalFlatList {...props} />}
+      {type === 'animatedflatlist' && <FlatListReanimated {...props} />}
       <View
         style={{
           position: 'absolute',
