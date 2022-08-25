@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, { FC, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
 import { Button, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import BidirectionalFlatList from 'react-native-bidirectional-flatlist';
@@ -66,11 +66,23 @@ const Message: FC<MessageType> = ({ id, color, height }) => {
   );
 };
 
-export default function App() {
+
+const types = ['FlatList', 'AnimatedFlatList'] as const;
+type Type = typeof types[number];
+
+const ExampleLink = ({type}: {type: Type}) => {
+  const {setType} = useContext(ExampleContext);
+  const onPress = useCallback(() => {
+    setType(type);
+  }, [setType, type]);
+  return <TouchableOpacity onPress={onPress}><View style={{height: 50, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16}}><Text>{type}</Text></View></TouchableOpacity>;
+}
+
+const ExampleContext = React.createContext<{type: string | undefined; back: () => unknown; setType: (type: Type) => unknown}>({type: undefined, back: () => {/* placeholder */}, setType: (_type) => {/* placeholder */}});
+
+const Example = ({children}: {children: (props: any) => ReactNode}) => {
   const [puffer] = useState(() => generateData(20, 0));
   const [data, setData] = useState<MessageType[]>([]);
-  const [type, setType] = useState<'flatlist' | 'animatedflatlist'>('flatlist');
-  const toggleType = useCallback(() => setType(t => t === 'flatlist' ? 'animatedflatlist' : 'flatlist'), []);
 
   const ref = useAnimatedRef<FlatList>();
 
@@ -79,6 +91,11 @@ export default function App() {
   }, [])
 
   const keyExtractor = useCallback((item) => item.id, []);
+
+  const prependAndRemoveFirst = useCallback(async () => {
+    const newData = generateData(20);
+    setData((x) => [...newData, ...x.slice(1)]);
+  }, []);
 
   const prepend = useCallback(async () => {
     const newData = generateData(20);
@@ -94,22 +111,21 @@ export default function App() {
     setData([]);
   }, []);
 
-  const finalData = useMemo(() => [...data, ...puffer], [data]);
+  const finalData = useMemo(() => [...data, ...puffer], [data, puffer]);
 
   const props = {
     windowSize: 21,
     maxToRenderPerBatch: 20,
     initialNumToRender: 20,
     data: finalData,
-    renderItem: renderItem,
-    keyExtractor: keyExtractor,
-    ref: ref as any,
+    renderItem,
+    keyExtractor,
+    ref,
   }
 
-  return (
-    <View style={{ flex: 1 }}>
-      {type === 'flatlist' && <BidirectionalFlatList {...props} />}
-      {type === 'animatedflatlist' && <FlatListReanimated {...props} />}
+  return <ExampleContext.Consumer>
+    {({type, back}) => <>
+      {children(props)}
       <View
         style={{
           position: 'absolute',
@@ -118,27 +134,57 @@ export default function App() {
           justifyContent: 'center',
         }}
       >
+        <Button title="Prepend And Remove First" onPress={prependAndRemoveFirst} />
         <Button title="Prepend" onPress={prepend} />
         <Button title="Append" onPress={append} />
         <Button title="Reset" onPress={reset} />
       </View>
-      <TouchableOpacity onPress={toggleType}>
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 100,
-            right: 0,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            backgroundColor: 'red',
-            padding: 8,
-          }}
-        >
-          <Text style={{ fontWeight: '900', color: 'white', fontSize: 16 }}>
-            {data.length} / {type}
+      <TouchableOpacity onPress={back} style={{
+        position: 'absolute',
+        top: 100,
+        left: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        backgroundColor: 'black',
+        padding: 8,
+      }}>
+        <View>
+          <Text style={{ color: 'white', fontSize: 16 }}>
+            🔙 {type}
           </Text>
         </View>
       </TouchableOpacity>
-    </View>
+      <View style={{
+          position: 'absolute',
+          bottom: 100,
+          right: 0,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          backgroundColor: 'red',
+          padding: 8,
+        }}>
+        <Text style={{ fontWeight: '900', color: 'white', fontSize: 16 }}>
+         {data.length}
+        </Text>
+      </View>
+    </>}
+  </ExampleContext.Consumer>
+}
+
+export default function App() {
+  const [type, setType] = useState<Type>();
+
+  const back = useCallback(() => setType(undefined), [])
+
+  return (
+    <ExampleContext.Provider value={{type, setType, back}}>
+      <View style={{ flex: 1 }}>
+        {!type && <View>
+          {types.map(t => <ExampleLink key={t} type={t} />)}
+        </View>}
+        {type === 'FlatList' && <Example>{props => <BidirectionalFlatList {...props} />}</Example>}
+        {type === 'AnimatedFlatList' && <Example>{props => <FlatListReanimated {...props} />}</Example>}
+      </View>
+    </ExampleContext.Provider>
   );
 }
