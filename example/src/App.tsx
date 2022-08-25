@@ -67,7 +67,7 @@ const Message: FC<MessageType> = ({ id, color, height }) => {
 };
 
 
-const types = ['FlatList', 'AnimatedFlatList'] as const;
+const types = ['FlatList', 'AnimatedFlatList', 'getItemLayout'] as const;
 type Type = typeof types[number];
 
 const ExampleLink = ({type}: {type: Type}) => {
@@ -92,8 +92,12 @@ const Example = ({children}: {children: (props: any) => ReactNode}) => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
+  const removeFirst = useCallback(async () => {
+    setData((x) => x.slice(1));
+  }, []);
+
   const prependAndRemoveFirst = useCallback(async () => {
-    const newData = generateData(20);
+    const newData = generateData(5);
     setData((x) => [...newData, ...x.slice(1)]);
   }, []);
 
@@ -134,6 +138,7 @@ const Example = ({children}: {children: (props: any) => ReactNode}) => {
           justifyContent: 'center',
         }}
       >
+        <Button title="Remove First" onPress={removeFirst} />
         <Button title="Prepend And Remove First" onPress={prependAndRemoveFirst} />
         <Button title="Prepend" onPress={prepend} />
         <Button title="Append" onPress={append} />
@@ -171,6 +176,18 @@ const Example = ({children}: {children: (props: any) => ReactNode}) => {
   </ExampleContext.Consumer>
 }
 
+const GetItemLayoutExample = (props: any) => {
+  const getItemLayout = (data: MessageType[], index: number) => {
+    return {
+      index,
+      length: data[index]?.height,
+      offset: data.slice(0, index).reduce((p,c) => p + c.height, 0),
+    }
+  }
+
+  return <FlatListReanimated {...props} getItemLayout={getItemLayout} />
+}
+
 export default function App() {
   const [type, setType] = useState<Type>();
 
@@ -184,6 +201,7 @@ export default function App() {
         </View>}
         {type === 'FlatList' && <Example>{props => <BidirectionalFlatList {...props} />}</Example>}
         {type === 'AnimatedFlatList' && <Example>{props => <FlatListReanimated {...props} />}</Example>}
+        {type === 'getItemLayout' && <Example>{props => <GetItemLayoutExample {...props} />}</Example>}
       </View>
     </ExampleContext.Provider>
   );

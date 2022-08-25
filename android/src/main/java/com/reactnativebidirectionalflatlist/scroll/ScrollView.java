@@ -38,11 +38,10 @@ public class ScrollView extends ReactScrollView {
   @Override
   public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
     super.onLayoutChange(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom);
-    int shiftHeight = Math.min(bottom - oldBottom, (int)mShiftHeight);
     int scrollWindowHeight = getHeight() - getPaddingBottom() - getPaddingTop();
-    if(mShiftHeight != 0 && shiftHeight > 0 && mShiftOffset <= getScrollY() + scrollWindowHeight / 2) {
+    if(mShiftHeight != 0 && mShiftOffset <= getScrollY() + scrollWindowHeight / 2) {
       // correct
-      scrollTo(0, getScrollY() + shiftHeight);
+      scrollTo(0, getScrollY() + (int)mShiftHeight);
       if(getOverScrollerFromParent() != null && !getOverScrollerFromParent().isFinished()) {
         // get current directed velocity from scroller
         int direction = getOverScrollerFromParent().getFinalY() - getOverScrollerFromParent().getStartY() > 0 ? 1 : -1;

@@ -31,15 +31,16 @@ const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props
     } else {
       (ref as MutableRefObject<FlatListType>).current = obj;
     }
-  }, []);
+  }, [ref]);
 
   // todo add hack to prevent flickering
   const {
     data = [],
-    keyExtractor = (item) => item.id,
+    keyExtractor = (item: any) => item.id ?? item.key,
     renderItem,
     onUpdateData,
     getItemLayout,
+    onLayout,
   } = props;
   const {finalData, prerender, getItemLayoutCustom} = usePrerenderedData({
     data: data ?? [],
@@ -51,10 +52,10 @@ const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props
   });
 
   const [width, setWidth] = useState<number>();
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    props.onLayout?.(e);
+  const onLayoutFlatList = useCallback((e: LayoutChangeEvent) => {
+    onLayout?.(e);
     setWidth(e.nativeEvent.layout.width);
-  }, []);
+  }, [onLayout]);
 
   return <>
     <FlatListRN
@@ -62,7 +63,7 @@ const FlatListImpl = forwardRef<FlatListType, BidirectionalFlatListProps>((props
       renderScrollComponent={Platform.OS === 'android' ? renderScrollComponent : undefined}
       getItemLayout={getItemLayoutCustom}
       {...props}
-      onLayout={onLayout}
+      onLayout={onLayoutFlatList}
       data={finalData}
       ref={captureRef} />
     {prerender && !!width && <View style={[styles.prerender, {width}]}>

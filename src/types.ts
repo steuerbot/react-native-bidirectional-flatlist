@@ -8,5 +8,8 @@ export type ShiftFunction = ({ offset, height }: { offset: number; height: numbe
 
 export type FlatListType = typeof FlatListRN & {shift: ShiftFunction};
 
-export type BidirectionalFlatListProps = FlatListProps<any> & {renderItem: RenderItem, onUpdateData?: OnUpdateData};
+export type KeyExtractor = <T>(item: T) => string;
+
+export type BidirectionalFlatListProps = FlatListProps<any> & {renderItem: RenderItem, onUpdateData?: OnUpdateData, keyExtractor: KeyExtractor};
+
 
