@@ -13,6 +13,14 @@ Whenever a new list item is added to the list, the height of this new item is ca
 When items will be prepended, the heights of the new items will be used to correct the current scroll position of the FlatList. The correction is made in the native part of the ScrollView component.
 For iOS, this is not necessary, because the property `maintainVisibleContentPosition` will be used.
 
+## Examples
+
+### Prepend items during scroll
+![Prepend items](./docu/prepend.gif)
+
+### Remove one item and prepend multiple
+![Remove one and prepend multiple](./docu/remove-and-add.gif)
+
 ## Installation
 
 ```sh
