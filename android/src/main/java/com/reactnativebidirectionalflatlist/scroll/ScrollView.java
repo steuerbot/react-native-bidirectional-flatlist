@@ -1,12 +1,12 @@
 package com.reactnativebidirectionalflatlist.scroll;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.OverScroller;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+import com.facebook.react.uimanager.ThemedReactContext;
 
 import com.facebook.common.logging.FLog;
 import com.facebook.react.common.ReactConstants;
@@ -21,7 +21,7 @@ public class ScrollView extends ReactScrollView {
   protected double mShiftHeight = 0;
   protected double mShiftOffset = 0;
 
-  public ScrollView(Context context) {
+  public ScrollView(ThemedReactContext context) {
     super(context, null);
   }
 
