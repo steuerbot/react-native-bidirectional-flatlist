@@ -14,6 +14,14 @@ Whenever a new list item is added to the list, the height of this new item is ca
 When items will be prepended, the heights of the new items will be used to correct the current scroll position of the FlatList. The correction is made in the native part of the ScrollView component.
 For iOS, this is not necessary, because the property `maintainVisibleContentPosition` will be used.
 
+## React Native Versions
+
+| react-native    | react-native-bidirectional-flatlist |
+|-----------------|-------------------------------------|
+| 0.73.x          | 0.6.0                               |
+| 0.72.x          | ? (untested)                        |
+| 0.71.x – 0.69.x | 0.5.0                               |
+
 ## Examples
 
 ### Prepend items during scroll

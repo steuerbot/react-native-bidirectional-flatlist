@@ -16,7 +16,7 @@ export class ScrollViewComponent extends ScrollViewRNRaw {
   }
 
   shift: ShiftFunction = ({ offset, height }: { offset: number; height: number }) => {
-    this._scrollViewRef.setNativeProps({
+    this.getNativeScrollRef().setNativeProps({
       shiftOffset: PixelRatio.getPixelSizeForLayoutSize(offset),
       shiftHeight: PixelRatio.getPixelSizeForLayoutSize(height),
     });
@@ -44,8 +44,8 @@ export class ScrollViewComponent extends ScrollViewRNRaw {
       this.props.onContentSizeChange == null
         ? null
         : {
-            onLayout: this._handleContentOnLayout,
-          };
+          onLayout: this._handleContentOnLayout,
+        };
 
     const { stickyHeaderIndices } = this.props;
     const children = this.props.children;
@@ -102,7 +102,7 @@ export class ScrollViewComponent extends ScrollViewRNRaw {
       onScrollShouldSetResponder: this._handleScrollShouldSetResponder,
       onStartShouldSetResponder: this._handleStartShouldSetResponder,
       onStartShouldSetResponderCapture:
-        this._handleStartShouldSetResponderCapture,
+      this._handleStartShouldSetResponderCapture,
       onTouchEnd: this._handleTouchEnd,
       onTouchMove: this._handleTouchMove,
       onTouchStart: this._handleTouchStart,
@@ -139,8 +139,12 @@ export class ScrollViewComponent extends ScrollViewRNRaw {
     //   props.decelerationRate = processDecelerationRate(decelerationRate);
     // }
 
+    const scrollViewRef = this._scrollView.getForwardingRef(
+      this.props.scrollViewRef,
+    );
+
     return (
-      <NativeDirectionalScrollView {...props} ref={this._setNativeRef}>
+      <NativeDirectionalScrollView {...props} maintainVisibleContentPosition={undefined} ref={scrollViewRef}>
         {contentContainer}
       </NativeDirectionalScrollView>
     );
